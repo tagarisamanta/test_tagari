@@ -1,0 +1,138 @@
+# Nanog_microRNA_TS_SK_model.ode
+# This file contains the differential equations governing the Nanog-microRNA Network.
+#--------------------------------------------------------
+# State Variables:
+#--------------------------------------------------------
+# GaN
+# GaO
+# GaS
+# P1N
+# P2N
+# DP1N
+# DP2N
+# OS
+# Po
+# Ps
+# mO
+# mS
+# MMS2
+# MPP7
+# miM1
+# miM2
+# miR
+#--------------------------------------------------------
+# Initial conditions:
+#---------------------------------------------------
+init GaN=0
+init GaO=0
+init GaS=0
+init P1N=0
+init P2N=0
+init DP1N=0
+init DP2N=0
+init OS=0
+init Po=0
+init Ps=0
+init mO=0
+init mS=0
+init MMS2=0
+init MPP7=0
+init miM1=0
+init miM2=0
+init miR=0
+#-----------------------------------------------------
+#Parameters for Nanog promoter activation-deactivation
+
+param kag=0.663,kag1=10.0,kdgp=0.00000167,kdg=0.609,kdgI21=0.4,kdgI22=0.103,J0=0.0013
+param GF=5,I1=0.0,I2=0.0,GtN=1.0,k=1.0,ksat=0.78,kg1=0.55,kg2=0.3
+#--------------------------------------------------------
+#Parameters for Nanog-MS2 transcript formation 
+
+Param km1=0.6,kinhim1=3.8,kdm1=0.0034,b1=0.7,n21=10.0,kI21=1.46,kmir1=0.000001,kdmir1=0.0001
+#--------------------------------------------------------------------
+#Parameters for Nanog-PP7 transcript formation 
+
+param km2=0.46,kinhim2=3.8,kdm2=0.005,b2=0.65,n22=10.0,kI22=1.46,kmir2=0.000001,kdmir2=0.0001
+#---------------------------------------------------------------------
+#Parameters for miR-296, miR-296-MS2 and miR-296-PP7 complex
+
+param bmir=1.0,kdmir=0.00195,kdmim1=0.0085,kdmim2=0.0125,kinhi1=0.2,kinhi2=0.2
+#--------------------------------------------------------------------------
+#Parameters for Nanog proteins (P1N and P2N) and its dimeric form (DP1N and DP2N) 
+
+param kp1=0.0104,kp2=0.0104,kmp1=0.01,kmp2=0.01,ke=0.1,kf=60,kdp=0.00495
+#-----------------------------------------------  
+#Parameters for Oct4 promoter activation
+
+param kao=0.009,kdo=0.02,J1o=0.005,GtO=1.0
+#---------------------------------------------------
+#Parameters for Sox2 promoter activation 
+
+param kas=0.00023,kds=0.01,J1s=0.005,GtS=1.0
+#-----------------------------------------------------------
+#Parameters for Oct4 and Sox2 mRNA transcription (mO and mS)
+
+param kmo=0.11,kdmo=0.0022,kms=0.66,kdms=0.01
+#-------------------------------------------------------
+#Parameters for Oct4 and Sox2 protein translation (pO and pS)
+
+param koct=0.055,kdoct=0.00277,ksox=.05,kdsox=.01
+#----------------------------------------------------------
+#Parameters used in Oct4-Sox2 heterodimer complex (OS) formation 
+
+param kos=0.0005,kdos=8.0   
+#-----------------------------------------------------------
+#---------------------------------------------------
+# Differential equations:
+#----------------------------------------------------
+dGaN/dt= ((1+(k*I1^2)/(ksat^2+I1^2))*(1-kg1*I2+kg2*I2^2)*((kag*OS/(kag1**2+OS**2))+J0*GF)*(GtN-GaN)-(kdg-kdgI21*I2+kdgI22*I2^2)*GaN)-kdgp*(DP1N+DP2N)*GaN
+
+dMMS2/dt=(km1*(1+kinhim1*I1)*(1-(b1*I2^n21)/(kI21^n21+I2^n21))*GaN-kmir1*miR*MMS2+kdmir1*miM1+kdmir*miM1-kdm1*MMS2)
+
+dMPP7/dt=(km2*(1+kinhim2*I1)*(1-(b1*I2^n22)/(kI22^n22+I2^n22))*GaN-kmir2*miR*MPP7+kdmir2*miM2+kdmir*miM2-kdm2*MPP7)
+
+dP1N/dt=(kp1*MMS2+kmp1*miM1-kdp*P1N-2*ke*P1N**2+2*kf*DP1N+kdp*DP1N)
+
+dP2N/dt=(kp2*MPP7+kmp2*miM2-kdp*P2N-2*ke*P2N**2+2*kf*DP2N+kdp*DP2N)
+
+dDP1N/dt=(ke*P1N**2-(kf+kdp)*DP1N)
+
+dDP2N/dt=(ke*P2N**2-(kf+kdp)*DP2N)
+
+dGaO/dt= ((kao*(DP1N+DP2N))+(J1o*GF))*(GtO-GaO)-(kdo*GaO)
+
+dGaS/dt= ((kas*(DP1N+DP2N))+(J1s*GF))*(GtS-GaS)-(kds*GaS)
+
+dmO/dt=(kmo*GaO-kdmo*mO)
+
+dPo/dt= (-kdoct*Po+koct*mO-kos*(Po*Ps)+kdos*OS+kdsox*OS)
+ 
+dmS/dt=(kms*GaS-kdms*mS)
+
+dPs/dt= (-kdsox*Ps+ksox*mS-kos*(Po*Ps)+kdos*OS+kdoct*OS)
+
+dOS/dt=(-kdos*OS+kos*(Po*Ps)-kdsox*OS-kdoct*OS)
+
+dmiR/dt=((bmir/(1+kinhi1*I1+kinhi2*I2))-kdmir*miR-kmir1*miR*MMS2+kdmir1*miM1+kdmim1*miM1\
+-kmir2*miR*MPP7+kdmir2*miM2+kdmim2*miM2+kdm1*miM1+kdm2*miM2)
+
+dmiM1/dt=(kmir1*miR*MMS2-kdmir1*miM1-kdm1*miM1-kdmir*miM1-kdmim1*miM1)
+
+dmiM2/dt=(kmir2*miR*MPP7-kdmir2*miM2-kdm2*miM2-kdmir*miM2-kdmim2*miM2)
+#----------------------------------------------
+# Auxiliary variables defined for ease of plotting and scaled variables:
+#-------------------------------------------
+# Total microRNA
+aux miRtotal=miR+miM1+miM2
+#----------------------------------------------------------
+# Total Nanog mRNA
+aux Mtotal=MMS2+miM1+MPP7+miM2
+#-----------------------------------------------
+# Total Nanog protein
+aux Ptotal=P1N+P2N+2*DP1N+2*DP2N
+#---------------------------------------------------------
+@ BOUND=100000000000,XP=t,YP=MMS2,TOTAL=10000, METH=Cvode
+@ XLO=0, XHI=10000, YLO=0,YHI=7000
+#---------------------------------------
+done
+
